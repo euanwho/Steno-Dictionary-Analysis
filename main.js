@@ -4,12 +4,12 @@ const dictionary = [];
 const wordList = [];
 const analysis = require('./analysis')
  
-/*function dictionaryCreate(){
+function dictionaryCreate(){
     fs.createReadStream('data.csv')
         .pipe(csv(['English', 'Steno', 'Translates']))
         .on('data', (data) => dictionary.push(data))
         .on('end', () => {
-        // console.log(dictionary);
+         console.log(dictionary);
         // [
         //   { English: ', in other words', Steno: 'NOERDZ', Translates: '307' },
         // ]
@@ -18,10 +18,10 @@ const analysis = require('./analysis')
   
 function wordListCreate() {
     fs.createReadStream('wordList.csv')
-    .pipe(csv(['Word']))
+    .pipe(csv())
     .on('data', (data) => wordList.push(data))
     .on('end', () => {
-      console.log(wordList.length);
+      console.log(wordList);
       // [
       //   { English: ', in other words', Steno: 'NOERDZ', Translates: '307' },
       // ]
@@ -29,22 +29,12 @@ function wordListCreate() {
 }
 
 
-// analysis.analyseDictionary(dictionary, wordList);
+wordListCreate();
+dictionaryCreate();
+console.log(dictionary, wordList);
+analysis.analyseDictionary(dictionary, wordList);
 
-/* Write method to search dictionary for group of words, and if it is written in two strokes return it */
+var a = [{ English: 1, Steno: "#1"}, {English: 2, Steno: "#2"}];
+var b = [{English: 3, Steno: "#3"}, {English: 1, Steno: "#3"}];
 
-function what(dic, wordL) {
-    wordL.forEach(function (item, index) {
-        var word = item;
-        dic.forEach(function (item, index) {
-            if (word == item) {
-                console.log(word);
-            }
-        });
-    }); 
-}
-
-var a = [1, 2, 3, 2, 5];
-var b = [9, 8, 7, 4, 5];
-
-what(a, b);
+// analysis.analyseDictionary(a, b);
