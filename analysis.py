@@ -1,4 +1,5 @@
 import csv
+from operator import attrgetter
 
 dictionary = []
 word_list = []
@@ -7,23 +8,23 @@ words_to_brief = []
 
 with open('data.csv') as dictionary_file:
     csv_reader = csv.reader(dictionary_file)
-
-    for line in csv_reader:
-      dictionary.append({'English': line[0], 'Steno': line[1], 'Translates': line[2]})
-
-with open('wordList.csv') as word_list_file:
+    dictionary = [{'English': line[0], 'Steno': line[1], 'Translates': line[2]} for line in csv_reader]
+  
+with open('wordList.csv') as word_list_file: 
     csv_reader = csv.reader(word_list_file)
-    for line in csv_reader:
-      word_list.append(line[0])
+    word_list = [line[0] for line in csv_reader]
 
 for word in word_list:
+  is_in_dictionary = False
   for entry in dictionary:
       if word == entry['English']:
+        is_in_dictionary = True
         words_matched.append(word)
-      if entry['Steno'].find('/'):
-        words_to_brief.append({'English': entry['English'], 'Steno': entry['Steno']})
-        
+      ##if entry['Steno'].find('/'):
+      ##  words_to_brief.append({'English': entry['English'], 'Steno': entry['Steno']})"""
 
-print(words_to_brief)
+def d_sort(dictionary): # function take s value as parameter 
+  return int(dictionary['Translates'])
 
-print(dictionary[2])
+dictionary = sorted(dictionary, key=d_sort) # key takes function
+print(dictionary)
