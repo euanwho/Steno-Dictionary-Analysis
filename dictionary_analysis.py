@@ -29,11 +29,16 @@ def get_briefs(dictionary_file_name, word_list_file_name):
   dictionary, word_list = get_dictionary(dictionary_file_name), get_word_list(word_list_file_name)
 
   words_matched = []
+  words_unmatched = []
   for word in word_list:
     for entry in dictionary:
-          if word == entry['English'] and '/' in entry['Steno']:
-            words_matched.append(word)
-  
+      if word == entry['English'] and '/' in entry['Steno']:
+        words_matched.append(word)
+      elif word == entry['English'] and '/' not in entry['Steno']:
+        words_unmatched.append(word)
+
+  words_matched = [word for word in words_matched if word not in words_unmatched]
+        
   return words_matched
 
 def get_missing_words(dictionary_file_name, word_list_file_name):
@@ -46,6 +51,7 @@ def get_missing_words(dictionary_file_name, word_list_file_name):
           break
     else:
       words_not_matched.append(word)
+
   return words_not_matched
 
 def get_brief_list(words_matched, output_file_name='words_to_brief'):
@@ -62,7 +68,5 @@ def unpickle_object(obj, file_name):
     pickle.load(unpickled_object)
 
 ## Todo: 
-## !!! make sure words in words_matched don't have an entry in the dictionary somewhere else in one stroke inside get_briefs
-## improve upon get_missing_words
 ## write function to detect conflicts - compare these against a word list
-## take in two-item tuple/list and check that they are written differently
+## take in two-item tuple/list and check that they are written differently 
