@@ -1,8 +1,8 @@
 import csv
 import pickle
 
-# Return dictionary in dictionary form
 def get_dictionary(file_name):
+  """Return dictionary file as a dictionary"""
   dictionary = []
   with open(file_name) as dictionary_file:
       csv_reader = csv.reader(dictionary_file)
@@ -15,8 +15,8 @@ def get_dictionary(file_name):
 
   return dictionary
 
-# Return word list in list form
 def get_word_list(file_name):  
+  """Return word list file as a list"""
   word_list = []
   with open(file_name) as word_list_file: 
       csv_reader = csv.reader(word_list_file)
@@ -24,8 +24,8 @@ def get_word_list(file_name):
 
   return word_list
 
-# Return the words for which there isn't a one-stroker to word_matched
 def get_briefs(dictionary_file_name, word_list_file_name):
+  """Return a list of words for which there is no one-stroker"""
   dictionary, word_list = get_dictionary(dictionary_file_name), get_word_list(word_list_file_name)
 
   words_matched = []
@@ -42,6 +42,7 @@ def get_briefs(dictionary_file_name, word_list_file_name):
   return words_matched
 
 def get_missing_words(dictionary_file_name, word_list_file_name):
+  """Return list of words that aren't in a dictionary as compared with a word list"""
   dictionary, word_list = get_dictionary(dictionary_file_name), get_word_list(word_list_file_name)
 
   words_not_matched = []
@@ -54,7 +55,8 @@ def get_missing_words(dictionary_file_name, word_list_file_name):
 
   return words_not_matched
 
-def get_brief_list(words_matched, output_file_name='words_to_brief'):
+def write_list(words_matched, output_file_name='words_to_brief'):
+  """Produce a .txt file from a list of words"""
   with open(output_file_name + '.txt', 'w') as wordlist_generated:
     for word in words_matched:
       wordlist_generated.write(word + '\n')
