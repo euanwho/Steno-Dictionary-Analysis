@@ -1,12 +1,13 @@
 import csv
 import pickle
+import profile
+from collections import Counter
 
 def get_dictionary(file_name):
   """Return dictionary file as a dictionary"""
   dictionary = []
   with open(file_name) as dictionary_file:
-      csv_reader = csv.reader(dictionary_file)
-      dictionary = [{'English': line[0], 'Steno': line[1], 'Translates': line[2]} for line in csv_reader]
+      dictionary = [{'English': line[0], 'Steno': line[1], 'Translates': line[2]} for line in csv.reader(dictionary_file)]
 
   def dict_sort(dictionary): # function take s value as parameter 
     return int(dictionary['Translates'])
@@ -55,6 +56,14 @@ def get_missing_words(dictionary_file_name, word_list_file_name):
 
   return words_not_matched
 
+def get_duplicates(dictionary_file_name):
+  """Return a list of dictionary entries that are duplicates"""
+  dictionary = get_dictionary(dictionary_file_name)
+  
+  key_counts = Counter(entry['English'] for entry in dictionary)
+
+  return [entry for entry in dictionary if key_counts[entry['English']] > 1]
+
 def write_list(words_matched, output_file_name='words_to_brief'):
   """Produce a .txt file from a list of words"""
   with open(output_file_name + '.txt', 'w') as wordlist_generated:
@@ -70,5 +79,5 @@ def unpickle_object(obj, file_name):
     pickle.load(unpickled_object)
 
 ## Todo: 
-## write function to detect conflicts - compare these against a word list
-## take in two-item tuple/list and check that they are written differently 
+# make any functions generators?
+# make get_duplicates better
