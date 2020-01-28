@@ -7,7 +7,8 @@ def get_dictionary(file_name):
   """Return dictionary file as a dictionary"""
   dictionary = []
   with open(file_name) as dictionary_file:
-      dictionary = [{'English': line[0], 'Steno': line[1], 'Translates': line[2]} for line in csv.reader(dictionary_file)]
+      csv_reader = csv.reader(dictionary_file)
+      dictionary = [{'English': line[0], 'Steno': line[1], 'Translates': line[2]} for line in csv_reader]
 
   def dict_sort(dictionary): # function take s value as parameter 
     return int(dictionary['Translates'])
@@ -59,10 +60,18 @@ def get_missing_words(dictionary_file_name, word_list_file_name):
 def get_duplicates(dictionary_file_name):
   """Return a list of dictionary entries that are duplicates"""
   dictionary = get_dictionary(dictionary_file_name)
-  
   key_counts = Counter(entry['English'] for entry in dictionary)
+  duplicates = []
+  for entry in dictionary:
+    if key_counts[entry['English']] > 1:
+      duplicates.append(entry)
 
-  return [entry for entry in dictionary if key_counts[entry['English']] > 1]
+  def dict_sort(dictionary): # function take s value as parameter 
+    return dictionary['English']
+
+  duplicates = sorted(dictionary, key=dict_sort)
+
+  return sorted([entry for entry in dictionary if key_counts[entry['English']] > 1], key=dict_sort)
 
 def write_list(words_matched, output_file_name='words_to_brief'):
   """Produce a .txt file from a list of words"""
