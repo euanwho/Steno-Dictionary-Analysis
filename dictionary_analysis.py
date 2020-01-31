@@ -61,9 +61,9 @@ def get_duplicates(dictionary_file_name):
       duplicates[entry['English']].append(entry)  
   return duplicates
 
-def write_list(words_matched, output_file_name='words_to_brief'):
+def write_brief_list(words_matched, output_file_name='words_to_brief'):
   """Produce a .txt file from a list of words"""
-  with open(output_file_name + '.txt', 'w') as wordlist_generated:
+  with open(output_file_name, 'w') as wordlist_generated:
     for word in words_matched:
       wordlist_generated.write(word + '\n')
 

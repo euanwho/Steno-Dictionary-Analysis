@@ -1,5 +1,7 @@
 import pytest
 import dictionary_analysis
+import filecmp
+import os
 
 def test_get_dictionary():
     assert(dictionary_analysis.get_dictionary('test_dictionary.csv') == [{'English': 'zodiac', 'Steno': 'STKPWHRO-ED', 'Translates': '0'}, {'English': 'zodiac', 'Steno': 'STKPWHRO-ED/KWRA-K', 'Translates': '0'}, 
@@ -19,11 +21,11 @@ def test_get_missing_words():
 def test_get_duplicates():
     assert(dictionary_analysis.get_duplicates('test_dictionary.csv') == {'zodiac': [{'English': 'zodiac', 'Steno': 'STKPWHRO-ED', 'Translates': '0'}, {'English': 'zodiac', 'Steno': 'STKPWHRO-ED/KWRA-K', 'Translates': '0'}]})
 
-def test_write_list():
-    pass
-
-## TODO: 
-# write test_write_list
+def test_write_brief_list():
+    words_matched = ['himself', 'employee', 'yesterday', 'landscape', 'regime', 'custom', 'vitamin']
+    dictionary_analysis.write_brief_list(words_matched, 'test_brief_list.txt')
+    assert(filecmp.cmp('test_brief_list.txt', 'premade_brief_list.txt'))  
+    os.remove('test_brief_list.txt')   
 
 if __name__ == '__main__':
     pytest.main()
