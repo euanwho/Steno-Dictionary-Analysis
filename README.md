@@ -1,4 +1,4 @@
 # Dictionary-Parsing
-Python script to analyse a stenographer's dictionary
+Python script to analyse a stenographer's dictionary. 
 
-So far, it can analyse a dictionary against a given word list and return the words that are not in the dictionary or are not briefed, using get_missing_words() and get_briefs() respectively.
+Using this script, you can compare your dictionary against a list of words and find the words you don't have a brief for as well as any missing words as compared against the word list. Additionally, it can find duplicate entries.
