@@ -1,6 +1,9 @@
 import codecs
 import inspect
 import re
+import collections
+
+# TODO: Move dictionary format somewhere more canonical than formatting.
 from formatting import META_RE
 
 # A regular expression to capture an individual entry in the dictionary.
@@ -18,19 +21,12 @@ class TranslationConverter:
         def linenumber(f):
             return f[1].__code__.co_firstlineno
         
-        ## make a list of all methods of the class TranslationConverter
         handler_funcs = inspect.getmembers(self, inspect.ismethod)
-        ## sort the list by means of the linenumber function
         handler_funcs.sort(key=linenumber)
-        ## make a list of functions that re_handlers, passing in the docstring to _make_re_handler, which returns
-        ## a handling function if it is a re_handler function as checked by the if statement
         handlers = [self._make_re_handler(f.__doc__, f)
                     for name, f in handler_funcs 
                     if name.startswith('_re_handle_')]
-        ## add the match_nested ... to handlers list
         handlers.append(self._match_nested_command_group)
-
-        ## define function that returns a result if it is produced by passing it through all the re_handler functions contained in handlers
         def handler(s, pos):
             for handler in handlers:
                 result = handler(s, pos)
@@ -45,24 +41,17 @@ class TranslationConverter:
         # one where commands can be inserted (True) or not (False).
         self._whitespace = True
     
-    ## docstring passed to make_re_handler in pattern, this is used as regex pattern.
     def _make_re_handler(self, pattern, f):
         pattern = re.compile(pattern)
         def handler(s, pos):
-            ## s is pattern, pos is string to look in
             match = pattern.match(s, pos)
             if match:
-                ## check if there is a match. if there is, set newpos to the end index of matched substring
                 newpos = match.end()
-                ## result is what the function (f) returns when match is passed to it
                 result = f(match)
-                ## return a tuple of the end index of matched substring and the result of the function when passed matched string from regex comparison
                 return (newpos, result)
-            ## if there is no result, return none
             return None
-        ## this function returns the inner function, handler, which will still have access to the pattern
         return handler
-    ## here starts all the regex handler fucntions. they take one parameter, m, which 
+
     def _re_handle_escapedchar(self, m):
         r'\\([-\\{}])'
         return m.group(1)
@@ -303,11 +292,169 @@ def format_translation(t):
 
     return t
 
+STROKE_DELIMITER = '/'
 
-class RtfDictionary():
+_NUMBERS = set('0123456789')
+_IMPLICIT_NUMBER_RX = re.compile('(^|[1-4])([6-9])')
+NUMBER_KEY = lambda mod: mod.NUMBER_KEY
+IMPLICIT_HYPHEN_KEYS = lambda mod: set(mod.IMPLICIT_HYPHEN_KEYS),
+IMPLICIT_HYPHENS = lambda mod: {l.replace('-', '') for l in mod.IMPLICIT_HYPHEN_KEYS}
+
+def normalize_stroke(stroke):
+    letters = set(stroke)
+    if letters & _NUMBERS:
+        if NUMBER_KEY in letters:
+            stroke = stroke.replace(NUMBER_KEY, '')
+        # Insert dash when dealing with 'explicit' numbers
+        m = _IMPLICIT_NUMBER_RX.search(stroke)
+        if m is not None:
+            start = m.start(2)
+            return stroke[:start] + '-' + stroke[start:]
+    if '-' in letters:
+        if stroke.endswith('-'):
+            stroke = stroke[:-1]
+        ## changed his and I don't know what it does
+        elif IMPLICIT_HYPHENS in letters:
+            stroke = stroke.replace('-', '')
+    return stroke
+
+def normalize_steno(strokes_string):
+    """Convert steno strings to one common form."""
+    return tuple(normalize_stroke(stroke) for stroke
+                 in strokes_string.split(STROKE_DELIMITER))
+
+class StenoDictionary:
+    """A steno dictionary.
+    This dictionary maps immutable sequences to translations and tracks the
+    length of the longest key.
+    Attributes:
+    longest_key -- A read only property holding the length of the longest key.
+    timestamp -- File last modification time, used to detect external changes.
+    """
+
+    # False if class support creation.
+    readonly = False
 
     def __init__(self):
-        pass
+        self._dict = {}
+        self._longest_key_length = 0
+        self._longest_listener_callbacks = set()
+        self.reverse = collections.defaultdict(list)
+        # Case-insensitive reverse dict
+        self.casereverse = collections.defaultdict(list)
+        self.filters = []
+        self.timestamp = 0
+        self.readonly = False
+        self.enabled = True
+        self.path = None
+
+    def __str__(self):
+        return '%s(%r)' % (self.__class__.__name__, self.path)
+
+    def __repr__(self):
+        return str(self)
+
+    @property
+    def longest_key(self):
+        """The length of the longest key in the dict."""
+        return self._longest_key
+
+    def __len__(self):
+        return self._dict.__len__()
+
+    def __iter__(self):
+        return self._dict.__iter__()
+
+    def __getitem__(self, key):
+        return self._dict.__getitem__(key)
+
+    def clear(self):
+        self._dict.clear()
+        self.reverse.clear()
+        self.casereverse.clear()
+        self._longest_key = 0
+
+    def items(self):
+        return self._dict.items()
+
+    def update(self, *args, **kwargs):
+        assert not self.readonly
+        iterable_list = [
+            a.items() if isinstance(a, (dict, StenoDictionary))
+            else a for a in args
+        ]
+        if kwargs:
+            iterable_list.append(kwargs.items())
+        if not self._dict:
+            reverse = self.reverse
+            casereverse = self.casereverse
+            longest_key = self._longest_key
+            assert not (reverse or casereverse or longest_key)
+            self._dict = dict(*iterable_list)
+            for key, value in self._dict.items():
+                reverse[value].append(key)
+                casereverse[value.lower()].append(value)
+                key_len = len(key)
+                if key_len > longest_key:
+                    longest_key = key_len
+            self._longest_key = longest_key
+        else:
+            for iterable in iterable_list:
+                for key, value in iterable:
+                    self[key] = value
+
+    def __setitem__(self, key, value):
+        assert not self.readonly
+        if key in self:
+            del self[key]
+        self._longest_key = max(self._longest_key, len(key))
+        self._dict[key] = value
+        self.reverse[value].append(key)
+        self.casereverse[value.lower()].append(value)
+
+    def get(self, key, fallback=None):
+        return self._dict.get(key, fallback)
+
+    def __delitem__(self, key):
+        assert not self.readonly
+        value = self._dict.pop(key)
+        self.reverse[value].remove(key)
+        self.casereverse[value.lower()].remove(value)
+        if len(key) == self.longest_key:
+            if self._dict:
+                self._longest_key = max(len(x) for x in self._dict)
+            else:
+                self._longest_key = 0
+
+    def __contains__(self, key):
+        return self.get(key) is not None
+
+    def reverse_lookup(self, value):
+        return set(self.reverse[value])
+
+    def casereverse_lookup(self, value):
+        return set(self.casereverse[value])
+
+    @property
+    def _longest_key(self):
+        return self._longest_key_length
+
+    @_longest_key.setter
+    def _longest_key(self, longest_key):
+        if longest_key == self._longest_key_length:
+            return
+        self._longest_key_length = longest_key
+        for callback in self._longest_listener_callbacks:
+            callback(longest_key)
+
+    def add_longest_key_listener(self, callback):
+        self._longest_listener_callbacks.add(callback)
+
+    def remove_longest_key_listener(self, callback):
+        self._longest_listener_callbacks.remove(callback)
+
+
+class RtfDictionary(StenoDictionary):
 
     def load(self, filename):
         with open(filename, 'rb') as fp:
@@ -316,12 +463,12 @@ class RtfDictionary():
             styles = load_stylesheet(s)
             converter = TranslationConverter(styles)
             for m in DICT_ENTRY_PATTERN.finditer(s):
-                steno = m.group('steno')
+                steno = normalize_steno(m.group('steno'))
                 translation = m.group('translation')
                 converted = converter(translation)
                 if converted is not None:
                     yield steno, converted
-        return parse()
+        self.update(parse())
 
     def save(self, filename):
         with open(filename, 'wb') as fp:
@@ -334,11 +481,5 @@ class RtfDictionary():
                 writer.write(entry)
             writer.write("}\r\n")
 
-RtfDict = RtfDictionary()
-l = RtfDict.load('MS.rtf')
-i = 0
-for entry in l:
-    i += 1
-    print(entry)
-
-print(i)
+dic = RtfDictionary()
+dic.load('PD.rtf')
