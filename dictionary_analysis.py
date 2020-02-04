@@ -76,5 +76,6 @@ def unpickle_object(obj, file_name):
     pickle.load(unpickled_object)
 
 ## Todo: 
+# change functions so they take objects, not file names. That way code is more DRY
 # make any functions generators?
 # make get_duplicates better

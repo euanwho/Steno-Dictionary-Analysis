@@ -483,3 +483,4 @@ class RtfDictionary(StenoDictionary):
 
 dic = RtfDictionary()
 dic.load('PD.rtf')
+print(dic.reverse)
