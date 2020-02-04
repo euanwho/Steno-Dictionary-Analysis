@@ -13,13 +13,18 @@ def test_get_word_list():
     assert(dictionary_analysis.get_word_list('test_word_list.csv') == ['cognizant', 'Bayesian', 'antidisestablishmentarianism', 'Euan'])
 
 def test_get_briefs():
-    assert(dictionary_analysis.get_briefs('test_dictionary.csv', 'test_word_list.csv') == ['cognizant', 'Bayesian'])
+    dictionary = dictionary_analysis.get_dictionary('test_dictionary.csv')
+    word_list = dictionary_analysis.get_word_list('test_word_list.csv')
+    assert(dictionary_analysis.get_briefs(dictionary, word_list) == ['cognizant', 'Bayesian'])
 
 def test_get_missing_words():
-    assert(dictionary_analysis.get_missing_words('test_dictionary.csv', 'test_word_list.csv') == ['antidisestablishmentarianism', 'Euan'])
+    dictionary = dictionary_analysis.get_dictionary('test_dictionary.csv')
+    word_list = dictionary_analysis.get_word_list('test_word_list.csv')
+    assert(dictionary_analysis.get_missing_words(dictionary, word_list) == ['antidisestablishmentarianism', 'Euan'])
 
 def test_get_duplicates():
-    assert(dictionary_analysis.get_duplicates('test_dictionary.csv') == {'zodiac': [{'English': 'zodiac', 'Steno': 'STKPWHRO-ED', 'Translates': '0'}, {'English': 'zodiac', 'Steno': 'STKPWHRO-ED/KWRA-K', 'Translates': '0'}]})
+    dictionary = dictionary_analysis.get_dictionary('test_dictionary.csv')
+    assert(dictionary_analysis.get_duplicates(dictionary) == {'zodiac': [{'English': 'zodiac', 'Steno': 'STKPWHRO-ED', 'Translates': '0'}, {'English': 'zodiac', 'Steno': 'STKPWHRO-ED/KWRA-K', 'Translates': '0'}]})
 
 def test_write_brief_list():
     words_matched = ['himself', 'employee', 'yesterday', 'landscape', 'regime', 'custom', 'vitamin']

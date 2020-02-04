@@ -23,9 +23,8 @@ def get_word_list(file_name):
       word_list = [line[0] for line in csv_reader]
   return word_list
 
-def get_briefs(dictionary_file_name, word_list_file_name):
+def get_briefs(dictionary, word_list):
   """Return a list of words for which there is no one-stroker"""
-  dictionary, word_list = get_dictionary(dictionary_file_name), get_word_list(word_list_file_name)
   words_matched = []
   words_unmatched = []
   for word in word_list:
@@ -37,9 +36,8 @@ def get_briefs(dictionary_file_name, word_list_file_name):
   words_matched = [word for word in words_matched if word not in words_unmatched]
   return words_matched
 
-def get_missing_words(dictionary_file_name, word_list_file_name):
+def get_missing_words(dictionary, word_list):
   """Return list of words that aren't in a dictionary as compared with a word list"""
-  dictionary, word_list = get_dictionary(dictionary_file_name), get_word_list(word_list_file_name)
   words_not_matched = []
   for word in word_list:
     for entry in dictionary:
@@ -49,9 +47,8 @@ def get_missing_words(dictionary_file_name, word_list_file_name):
       words_not_matched.append(word)
   return words_not_matched
 
-def get_duplicates(dictionary_file_name):
+def get_duplicates(dictionary):
   """Return a list of dictionary entries that are duplicates"""
-  dictionary = get_dictionary(dictionary_file_name)
   key_counts = Counter(entry['English'] for entry in dictionary)
   duplicates = dict()
   for entry in dictionary:
@@ -76,6 +73,5 @@ def unpickle_object(obj, file_name):
     pickle.load(unpickled_object)
 
 ## Todo: 
-# change functions so they take objects, not file names. That way code is more DRY
 # make any functions generators?
 # make get_duplicates better
