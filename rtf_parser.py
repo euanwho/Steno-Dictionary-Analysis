@@ -480,7 +480,3 @@ class RtfDictionary(StenoDictionary):
                 entry = "{\\*\\cxs %s}%s\r\n" % (s, t)
                 writer.write(entry)
             writer.write("}\r\n")
-
-dic = RtfDictionary()
-dic.load('PD.rtf')
-print(dic.reverse)

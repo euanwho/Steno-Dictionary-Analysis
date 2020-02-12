@@ -10,8 +10,11 @@ def get_dictionary(file_name):
   with open(file_name) as dictionary_file:
       csv_reader = csv.reader(dictionary_file)
       for line in csv_reader:
-        strokes = tuple(line[1].split('/'))
-        dictionary[line[0]] = [strokes]
+        word, steno = line[0], tuple(line[1].split('/'))
+        if word not in dictionary:
+          dictionary[word] = [steno]
+        else:
+          dictionary[word].append(steno)
   return dictionary
 
 def get_word_list(file_name):  
@@ -40,13 +43,11 @@ def get_missing_words(dictionary, word_list):
 
 def get_duplicates(dictionary):
   """Return a list of dictionary entries that are duplicates"""
-  key_counts = Counter(entry['English'] for entry in dictionary)
+  key_counts = Counter(dictionary)
   duplicates = dict()
-  for entry in dictionary:
-    if key_counts[entry['English']] > 1 and entry['English'] not in duplicates:
-      duplicates[entry['English']] = [entry]
-    elif key_counts[entry['English']] > 1 and entry['English'] in duplicates:
-      duplicates[entry['English']].append(entry)  
+  for key, value in dictionary.items():
+    if len(value) > 1:
+      duplicates[key] = value
   return duplicates
 
 def write_brief_list(words_matched, output_file_name='words_to_brief'):
