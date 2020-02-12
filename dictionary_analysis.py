@@ -6,13 +6,12 @@ import pprint
 
 def get_dictionary(file_name):
   """Return dictionary file as a dictionary"""
-  dictionary = []
+  dictionary = defaultdict(list)
   with open(file_name) as dictionary_file:
       csv_reader = csv.reader(dictionary_file)
-      dictionary = [{'English': line[0], 'Steno': line[1], 'Translates': line[2]} for line in csv_reader]
-  def dict_sort(dictionary): # function take s value as parameter 
-    return int(dictionary['Translates'])
-  dictionary = sorted(dictionary, key=dict_sort) # key takes function
+      for line in csv_reader:
+        strokes = tuple(line[1].split('/'))
+        dictionary[line[0]] = [strokes]
   return dictionary
 
 def get_word_list(file_name):  
@@ -26,24 +25,16 @@ def get_word_list(file_name):
 def get_briefs(dictionary, word_list):
   """Return a list of words for which there is no one-stroker"""
   words_matched = []
-  words_unmatched = []
   for word in word_list:
-    for entry in dictionary:
-      if word == entry['English'] and '/' in entry['Steno']:
-        words_matched.append(word)
-      elif word == entry['English'] and '/' not in entry['Steno']:
-        words_unmatched.append(word)
-  words_matched = [word for word in words_matched if word not in words_unmatched]
+    if word in dictionary and len(dictionary[word][0]) > 1:
+      words_matched.append(word)
   return words_matched
 
 def get_missing_words(dictionary, word_list):
   """Return list of words that aren't in a dictionary as compared with a word list"""
   words_not_matched = []
   for word in word_list:
-    for entry in dictionary:
-        if word == entry['English']:
-          break
-    else:
+    if word not in dictionary:
       words_not_matched.append(word)
   return words_not_matched
 
