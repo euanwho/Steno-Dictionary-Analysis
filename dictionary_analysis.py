@@ -1,69 +1,75 @@
 import csv
-import pickle
-import profile
 from collections import Counter, defaultdict
-import pprint
 
-def get_dictionary(file_name):
-  """Return dictionary file as a dictionary"""
-  dictionary = defaultdict(list)
-  with open(file_name) as dictionary_file:
-      csv_reader = csv.reader(dictionary_file)
-      for line in csv_reader:
-        word, steno = line[0], tuple(line[1].split('/'))
-        if word not in dictionary:
-          dictionary[word] = [steno]
-        else:
-          dictionary[word].append(steno)
-  return dictionary
+class Dictionary():
 
-def get_word_list(file_name):  
-  """Return word list file as a list"""
-  word_list = []
-  with open(file_name) as word_list_file: 
-      csv_reader = csv.reader(word_list_file)
-      word_list = [line[0] for line in csv_reader]
-  return word_list
+  def __init__(self, file_name):
+          self.dictionary = self.get_dictionary(file_name)
+          self.duplicates = self.get_duplicates()
 
-def get_briefs(dictionary, word_list):
-  """Return a list of words for which there is no one-stroker"""
-  words_matched = []
-  for word in word_list:
-    if word in dictionary and len(dictionary[word][0]) > 1:
-      words_matched.append(word)
-  return words_matched
+  def get_dictionary(self, file_name):
+    """Return dictionary file as a dictionary"""
+    dictionary = defaultdict(list)
+    with open(file_name) as dictionary_file:
+        csv_reader = csv.reader(dictionary_file)
+        for line in csv_reader:
+          word, steno = line[0], tuple(line[1].split('/'))
+          if word not in dictionary:
+            dictionary[word] = [steno]
+          else:
+            dictionary[word].append(steno)
+    return dictionary
 
-def get_missing_words(dictionary, word_list):
-  """Return list of words that aren't in a dictionary as compared with a word list"""
-  words_not_matched = []
-  for word in word_list:
-    if word not in dictionary:
-      words_not_matched.append(word)
-  return words_not_matched
+    
+  def get_duplicates(self):
+    """Return a list of dictionary entries that are duplicates"""
+    key_counts = Counter(self.dictionary)
+    duplicates = dict()
+    for key, value in self.dictionary.items():
+      if len(value) > 1:
+        duplicates[key] = value
+    return duplicates
 
-def get_duplicates(dictionary):
-  """Return a list of dictionary entries that are duplicates"""
-  key_counts = Counter(dictionary)
-  duplicates = dict()
-  for key, value in dictionary.items():
-    if len(value) > 1:
-      duplicates[key] = value
-  return duplicates
+class Analyser():
+  
+  @staticmethod  
+  def get_briefs(Dictionary, WordList):
+    """Return a list of words for which there is no one-stroker"""
+    words_matched = []
+    for word in WordList.word_list:
+      if word in Dictionary.dictionary and len(Dictionary.dictionary[word][0]) > 1:
+        words_matched.append(word)
+    return words_matched
 
-def write_brief_list(words_matched, output_file_name='words_to_brief'):
+  @staticmethod
+  def get_missing_words(Dictionary, WordList):
+    """Return list of words that aren't in a dictionary as compared with a word list"""
+    words_not_matched = []
+    for word in WordList.word_list:
+      if word not in Dictionary.dictionary:
+        words_not_matched.append(word)
+    return words_not_matched
+
+class WordList():
+
+  def __init__(self, file_name):
+    self.word_list = self.get_word_list(file_name)
+
+  def get_word_list(self, file_name):  
+    """Return word list file as a list"""
+    word_list = []
+    with open(file_name) as word_list_file: 
+        csv_reader = csv.reader(word_list_file)
+        word_list = [line[0] for line in csv_reader]
+    return word_list
+
+def write(words_matched, output_file_name='words_to_brief'):
   """Produce a .txt file from a list of words"""
   with open(output_file_name, 'w') as wordlist_generated:
     for word in words_matched:
       wordlist_generated.write(word + '\n')
-
-def pickle_object(obj, file_name):
-  with open(file_name, 'wb') as pickled_file:
-    pickle.dump(obj, pickled_file)
-
-def unpickle_object(obj, file_name):
-  with open(file_name, 'rb') as unpickled_object:
-    pickle.load(unpickled_object)
-
-## Todo: 
-# make any functions generators?
-# make get_duplicates better
+      
+d = Dictionary('test_dictionary.csv')
+w = WordList('test_word_list.csv')
+a = Analyser()
+print(a.get_briefs(d, w), a.get_missing_words(d, w))
