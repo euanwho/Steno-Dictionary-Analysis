@@ -1,5 +1,6 @@
 import csv
 from collections import Counter, defaultdict
+from rtf_parser import RtfDictionary
 
 class Dictionary():
 
@@ -9,15 +10,20 @@ class Dictionary():
 
   def get_dictionary(self, file_name):
     """Return dictionary file as a dictionary"""
-    dictionary = defaultdict(list)
-    with open(file_name) as dictionary_file:
-        csv_reader = csv.reader(dictionary_file)
-        for line in csv_reader:
-          word, steno = line[0], tuple(line[1].split('/'))
-          if word not in dictionary:
-            dictionary[word] = [steno]
-          else:
-            dictionary[word].append(steno)
+    if '.csv' in file_name:
+      dictionary = defaultdict(list)
+      with open(file_name) as dictionary_file:
+          csv_reader = csv.reader(dictionary_file)
+          for line in csv_reader:
+            word, steno = line[0], tuple(line[1].split('/'))
+            if word not in dictionary:
+              dictionary[word] = [steno]
+            else:
+              dictionary[word].append(steno)
+    elif '.rtf' in file_name:
+      RtfDictionary = RtfDictionary()
+      RtfDictionary.load(file_name)
+      dictionary = RtfDictionary.reverse
     return dictionary
 
     
