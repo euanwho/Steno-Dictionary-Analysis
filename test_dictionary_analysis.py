@@ -29,11 +29,12 @@ def test_get_duplicates():
     dictionary = Dictionary('test_dictionary.csv')
     assert(dictionary.duplicates == {'zodiac': [('STKPWHRO-ED',), ('STKPWHRO-ED', 'KWRA-K')]})
 
-"""def test_write_brief_list():
+def test_write_brief_list():
+    word_list = WordList('test_word_list.csv')
     words_matched = ['himself', 'employee', 'yesterday', 'landscape', 'regime', 'custom', 'vitamin']
-    dictionary_analysis.write_brief_list(words_matched, 'test_brief_list.txt')
+    word_list.write(words_matched, 'test_brief_list.txt')
     assert(filecmp.cmp('test_brief_list.txt', 'premade_brief_list.txt'))  
-    os.remove('test_brief_list.txt')   """
+    os.remove('test_brief_list.txt')   
 
 if __name__ == '__main__':
     pytest.main()

@@ -69,13 +69,8 @@ class WordList():
         word_list = [line[0] for line in csv_reader]
     return word_list
 
-def write(words_matched, output_file_name='words_to_brief'):
-  """Produce a .txt file from a list of words"""
-  with open(output_file_name, 'w') as wordlist_generated:
-    for word in words_matched:
-      wordlist_generated.write(word + '\n')
-      
-d = Dictionary('test_dictionary.csv')
-w = WordList('test_word_list.csv')
-a = Analyser()
-print(a.get_briefs(d, w), a.get_missing_words(d, w))
+  def write(self, words_matched, output_file_name='words_to_brief'):
+    """Produce a .txt file from a list of words"""
+    with open(output_file_name, 'w') as wordlist_generated:
+      for word in words_matched:
+        wordlist_generated.write(word + '\n')
